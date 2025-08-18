@@ -112,6 +112,48 @@ func main() {
 		contentContainer.Refresh()
 	})
 
+	// 我的内容 / AccessToken 管理界面
+	myContentContent := container.NewVBox(
+		widget.NewLabel("我的 AccessToken 列表"),
+		container.NewGridWithColumns(1, // 示例 AccessToken 列表
+			container.NewHBox(
+				widget.NewLabel("内容: 内容标题1"),
+				widget.NewLabel("ID: 0x...123"),
+				widget.NewLabel("状态: 有效"),
+				widget.NewButton("解锁/查看", func() { /* 解锁/查看逻辑 */ }),
+				widget.NewButton("转让", func() { /* 转让逻辑 */ }),
+				widget.NewButton("撤销", func() { /* 撤销逻辑 */ }),
+			),
+			container.NewHBox(
+				widget.NewLabel("内容: 内容标题2"),
+				widget.NewLabel("ID: 0x...456"),
+				widget.NewLabel("状态: 已过期"),
+				widget.NewButton("解锁/查看", func() { /* 解锁/查看逻辑 */ }),
+				widget.NewButton("转让", func() { /* 转让逻辑 */ }),
+				widget.NewButton("撤销", func() { /* 撤销逻辑 */ }),
+			),
+		),
+		widget.NewButton("筛选/排序", func() { /* 筛选/排序逻辑 */ }),
+	)
+
+	// 更新侧边导航栏按钮的点击事件
+	marketBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{marketContent}
+		contentContainer.Refresh()
+	}
+	myContentBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{myContentContent}
+		contentContainer.Refresh()
+	}
+	uploadBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{widget.NewLabel("上传内容界面")}
+		contentContainer.Refresh()
+	}
+	settingsBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{widget.NewLabel("设置界面")}
+		contentContainer.Refresh()
+	}
+
 	// 初始显示内容市场界面
 	contentContainer.Objects = []fyne.CanvasObject{marketContent}
 
