@@ -223,6 +223,46 @@ func main() {
 		contentContainer.Refresh()
 	}
 
+	// 访问历史与收藏管理界面
+	historyAndFavoritesContent := container.NewVBox(
+		container.NewAppTabs(
+			container.NewTabItem("访问历史", container.NewGridWithColumns(1,
+				container.NewHBox(
+					widget.NewLabel("内容: 历史内容1"),
+					widget.NewLabel("创作者: 创作者Y"),
+					widget.NewButton("查看内容", func() { /* 查看内容逻辑 */ }),
+					widget.NewButton("从历史中移除", func() { /* 移除逻辑 */ }),
+				),
+			)),
+			container.NewTabItem("我的收藏", container.NewGridWithColumns(1,
+				container.NewHBox(
+					widget.NewLabel("内容: 收藏内容1"),
+					widget.NewLabel("创作者: 创作者Z"),
+					widget.NewButton("查看内容", func() { /* 查看内容逻辑 */ }),
+					widget.NewButton("取消收藏", func() { /* 取消收藏逻辑 */ }),
+				),
+			)),
+		),
+	)
+
+	// 更新侧边导航栏按钮的点击事件
+	marketBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{marketContent}
+		contentContainer.Refresh()
+	}
+	myContentBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{myContentContent}
+		contentContainer.Refresh()
+	}
+	uploadBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{uploadContent}
+		contentContainer.Refresh()
+	}
+	settingsBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{historyAndFavoritesContent} // 暂时将设置按钮指向这里
+		contentContainer.Refresh()
+	}
+
 	// 初始显示内容市场界面
 	contentContainer.Objects = []fyne.CanvasObject{marketContent}
 
