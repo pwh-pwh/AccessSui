@@ -154,6 +154,39 @@ func main() {
 		contentContainer.Refresh()
 	}
 
+	// 解锁内容界面
+	unlockContent := container.NewVBox(
+		widget.NewLabel("内容标题: 解锁内容X"),
+		widget.NewLabel("解锁状态: 正在请求随机数..."),
+		widget.NewLabel("签名提示: 请在您的钱包中确认签名。"),
+		container.NewMax( // 内容显示区域
+			widget.NewLabel("此处显示解密后的内容 (文本/图片/视频/PDF)"),
+		),
+		widget.NewButton("关闭", func() {
+			contentContainer.Objects = []fyne.CanvasObject{myContentContent} // 返回我的内容
+			contentContainer.Refresh()
+		}),
+	)
+
+	// 更新我的内容界面的“解锁/查看”按钮，使其指向 unlockContent
+	// 假设第一个 AccessToken 的解锁按钮
+	if len(myContentContent.Objects) > 1 { // 确保有内容列表
+		if hbox, ok := myContentContent.Objects[1].(*fyne.Container); ok {
+			if len(hbox.Objects) > 0 {
+				if innerHBox, ok := hbox.Objects[0].(*fyne.Container); ok {
+					if len(innerHBox.Objects) > 3 {
+						if unlockBtn, ok := innerHBox.Objects[3].(*widget.Button); ok {
+							unlockBtn.OnTapped = func() {
+								contentContainer.Objects = []fyne.CanvasObject{unlockContent}
+								contentContainer.Refresh()
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
 	// 初始显示内容市场界面
 	contentContainer.Objects = []fyne.CanvasObject{marketContent}
 
