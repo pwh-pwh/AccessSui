@@ -1,18 +1,11 @@
 package main
 
 import (
-	"context"
-	"fmt"
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
-	"github.com/block-vision/sui-go-sdk/constant"
-	"github.com/block-vision/sui-go-sdk/models"
-	"github.com/block-vision/sui-go-sdk/signer"
-	"github.com/block-vision/sui-go-sdk/sui"
-	"github.com/block-vision/sui-go-sdk/utils"
 )
 
 // package id:0xbda58f110ce755a63c007d68cc53f7ac68c780dc8fb1fb16ad52d797143b4799
@@ -33,83 +26,99 @@ const (
 
 func main() {
 	a := app.New()
-	w := a.NewWindow("counter")
-	w.Resize(fyne.NewSize(600, 400))
-	counter := GetCounter()
-	counterLabel := widget.NewLabel(fmt.Sprintf("counter: %d", counter))
-	txLabel := widget.NewLabel("transaction:")
-	txLabel.Selectable = true
-	txLabel.Wrapping = fyne.TextWrapWord
-	addBtn := widget.NewButton("add", func() {
-		tx := CallIncrement()
-		counter := GetCounter()
-		counterLabel.SetText(fmt.Sprintf("counter: %d", counter))
-		txLabel.SetText(fmt.Sprintf("transaction: %s", tx))
+	w := a.NewWindow("去中心化知识加密分享平台")
+	w.Resize(fyne.NewSize(800, 600))
+
+	// 创建一个可切换内容的容器
+	contentContainer := container.NewMax()
+
+	// 侧边导航栏
+	marketBtn := widget.NewButton("内容市场", func() {
+		contentContainer.Objects = []fyne.CanvasObject{widget.NewLabel("内容市场界面")}
+		contentContainer.Refresh()
+	})
+	myContentBtn := widget.NewButton("我的内容", func() {
+		contentContainer.Objects = []fyne.CanvasObject{widget.NewLabel("我的内容界面")}
+		contentContainer.Refresh()
+	})
+	uploadBtn := widget.NewButton("上传内容", func() {
+		contentContainer.Objects = []fyne.CanvasObject{widget.NewLabel("上传内容界面")}
+		contentContainer.Refresh()
+	})
+	settingsBtn := widget.NewButton("设置", func() {
+		contentContainer.Objects = []fyne.CanvasObject{widget.NewLabel("设置界面")}
+		contentContainer.Refresh()
 	})
 
-	ct := container.NewVBox(layout.NewSpacer(), counterLabel, txLabel, addBtn, layout.NewSpacer())
-	w.SetContent(ct)
+	sidebar := container.NewVBox(
+		marketBtn,
+		myContentBtn,
+		uploadBtn,
+		layout.NewSpacer(), // 将设置按钮推到底部
+		settingsBtn,
+	)
+
+	// 内容市场界面
+	marketContent := container.NewVBox(
+		widget.NewEntry(), // 搜索栏
+		container.NewGridWithColumns(3, // 示例内容卡片
+			widget.NewCard("内容标题1", "创作者A", widget.NewLabel("价格: 100 Sui")),
+			widget.NewCard("内容标题2", "创作者B", widget.NewLabel("价格: 150 Sui")),
+			widget.NewCard("内容标题3", "创作者C", widget.NewLabel("价格: 200 Sui")),
+		),
+		widget.NewButton("加载更多", func() {
+			// 加载更多内容的逻辑
+		}),
+	)
+
+	// 内容详情界面 (需要先定义，因为 purchaseTokenContent 会引用它)
+	var detailContent *fyne.Container // 声明为指针，以便在后面赋值
+	detailContent = container.NewVBox(
+		widget.NewLabel("内容标题详情"),
+		widget.NewLabel("创作者: 创作者X"),
+		widget.NewLabel("这是一个内容的详细描述。"),
+		widget.NewLabel("价格: 250 Sui"),
+		widget.NewButton("购买 AccessToken", func() {
+			// 购买逻辑，这里会跳转到购买流程界面
+			// contentContainer.Objects = []fyne.CanvasObject{purchaseTokenContent}
+			// contentContainer.Refresh()
+		}),
+		widget.NewButton("返回", func() {
+			contentContainer.Objects = []fyne.CanvasObject{marketContent}
+			contentContainer.Refresh()
+		}),
+	)
+
+	// 购买 AccessToken 流程界面
+	purchaseTokenContent := container.NewVBox(
+		widget.NewLabel("购买确认信息: 购买内容X, 价格: 250 Sui"),
+		widget.NewLabel("钱包连接状态: 已连接 (0x...abcd)"),
+		widget.NewLabel("交易详情预览: 扣除 250 Sui, Gas 费预估: 0.001 Sui"),
+		container.NewHBox(
+			widget.NewButton("确认购买", func() {
+				// 触发 Sui 钱包签名交易
+			}),
+			widget.NewButton("取消", func() {
+				contentContainer.Objects = []fyne.CanvasObject{detailContent} // 返回内容详情
+				contentContainer.Refresh()
+			}),
+		),
+		widget.NewLabel("交易状态提示: 等待用户确认..."),
+	)
+
+	// 更新内容详情界面的购买按钮，使其指向 purchaseTokenContent
+	detailContent.Objects[4] = widget.NewButton("购买 AccessToken", func() {
+		contentContainer.Objects = []fyne.CanvasObject{purchaseTokenContent}
+		contentContainer.Refresh()
+	})
+
+	// 初始显示内容市场界面
+	contentContainer.Objects = []fyne.CanvasObject{marketContent}
+
+	// 主布局：侧边栏 + 内容区域
+	mainLayout := container.NewHSplit(sidebar, contentContainer)
+	mainLayout.SetOffset(0.2) // 侧边栏占据20%宽度
+
+	w.SetContent(mainLayout)
 	w.ShowAndRun()
-}
-
-func CallIncrement() string {
-	client := sui.NewSuiClient(constant.SuiTestnetEndpoint)
-	ctx := context.Background()
-	//secretKey := os.Getenv("SecretKey")
-	mySigner, err := signer.NewSignerWithSecretKey(PriKey)
-	if err != nil {
-		panic(err)
-	}
-	rsp, err := client.MoveCall(ctx, models.MoveCallRequest{
-		Signer:          mySigner.Address,
-		PackageObjectId: "0xbda58f110ce755a63c007d68cc53f7ac68c780dc8fb1fb16ad52d797143b4799",
-		Module:          "counter",
-		Function:        "increment",
-		TypeArguments:   []interface{}{},
-		Arguments: []interface{}{
-			"0x7dc80959fdd7b4c68ba0caa2f0f1182fb297817742caf170dc1f787d58317f3d",
-		},
-		GasBudget:     "100000000",
-		ExecutionMode: "",
-	})
-	if err != nil {
-		panic(err)
-	}
-
-	rsp2, err := client.SignAndExecuteTransactionBlock(ctx, models.SignAndExecuteTransactionBlockRequest{
-		TxnMetaData: rsp,
-		PriKey:      mySigner.PriKey,
-		// only fetch the effects field
-		Options: models.SuiTransactionBlockOptions{
-			ShowInput:    true,
-			ShowRawInput: true,
-			ShowEffects:  true,
-		},
-		RequestType: "WaitForLocalExecution",
-	})
-
-	if err != nil {
-		fmt.Println(err.Error())
-		return ""
-	}
-
-	utils.PrettyPrint(rsp2)
-	return rsp2.Digest
-}
-
-func GetCounter() uint8 {
-	client := sui.NewSuiClient(constant.SuiTestnetEndpoint)
-	object, err := client.SuiGetObject(context.Background(), models.SuiGetObjectRequest{
-		ObjectId: CountObjId,
-		Options: models.SuiObjectDataOptions{
-			ShowContent: true,
-		},
-	})
-	if err != nil {
-		panic(err)
-	}
-	fields := object.Data.Content.Fields
-	counter := fields["counter"].(float64)
-	fmt.Printf("counter:%v", counter)
-	return uint8(counter)
 }
