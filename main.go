@@ -187,6 +187,42 @@ func main() {
 		}
 	}
 
+	// 创作者上传内容界面
+	uploadContent := container.NewVBox(
+		widget.NewLabel("上传新内容"),
+		widget.NewEntry(), // 内容标题输入框
+		widget.NewMultiLineEntry(), // 内容描述输入框
+		widget.NewButton("选择内容文件", func() { /* 文件选择逻辑 */ }),
+		widget.NewButton("上传封面图/缩略图", func() { /* 封面图上传逻辑 */ }),
+		container.NewHBox(
+			widget.NewLabel("价格:"),
+			widget.NewEntry(), // 价格输入框
+			widget.NewCheck("订阅制", func(b bool) { /* 订阅制选项 */ }),
+			widget.NewLabel("版税比例:"),
+			widget.NewEntry(), // 版税比例设置
+		),
+		widget.NewButton("上传并铸造", func() { /* 上传并铸造逻辑 */ }),
+		widget.NewLabel("上传进度: 0%"), // 上传进度条/状态提示
+	)
+
+	// 更新侧边导航栏按钮的点击事件
+	marketBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{marketContent}
+		contentContainer.Refresh()
+	}
+	myContentBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{myContentContent}
+		contentContainer.Refresh()
+	}
+	uploadBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{uploadContent}
+		contentContainer.Refresh()
+	}
+	settingsBtn.OnTapped = func() {
+		contentContainer.Objects = []fyne.CanvasObject{widget.NewLabel("设置界面")}
+		contentContainer.Refresh()
+	}
+
 	// 初始显示内容市场界面
 	contentContainer.Objects = []fyne.CanvasObject{marketContent}
 
