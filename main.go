@@ -6,6 +6,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/theme" // 导入 theme 包以使用内置图标
 	"github.com/mbaklor/fyne-catppuccin"
 	"github.com/pwh-pwh/AccessSui/mytheme"
 	"github.com/pwh-pwh/AccessSui/ui" // 导入 ui 包
@@ -24,23 +25,23 @@ func main() {
 	contentContainer := container.NewStack()
 
 	// 侧边导航栏
-	marketBtn := widget.NewButton("内容市场", func() {
+	marketBtn := widget.NewButtonWithIcon("内容市场", theme.HomeIcon(), func() {
 		contentContainer.Objects = []fyne.CanvasObject{ui.MarketContent(contentContainer)}
 		contentContainer.Refresh()
 	})
-	myContentBtn := widget.NewButton("我的内容", func() {
+	myContentBtn := widget.NewButtonWithIcon("我的内容", theme.DocumentIcon(), func() {
 		contentContainer.Objects = []fyne.CanvasObject{ui.MyContentContent(contentContainer)}
 		contentContainer.Refresh()
 	})
-	uploadBtn := widget.NewButton("上传内容", func() {
+	uploadBtn := widget.NewButtonWithIcon("上传内容", theme.ContentAddIcon(), func() {
 		contentContainer.Objects = []fyne.CanvasObject{ui.UploadContent(contentContainer)}
 		contentContainer.Refresh()
 	})
-	historyBtn := widget.NewButton("历史与收藏", func() {
+	historyBtn := widget.NewButtonWithIcon("历史与收藏", theme.HistoryIcon(), func() {
 		contentContainer.Objects = []fyne.CanvasObject{ui.HistoryAndFavoritesContent()}
 		contentContainer.Refresh()
 	})
-	settingsBtn := widget.NewButton("设置", func() {
+	settingsBtn := widget.NewButtonWithIcon("设置", theme.SettingsIcon(), func() {
 		contentContainer.Objects = []fyne.CanvasObject{ui.SettingsContent()}
 		contentContainer.Refresh()
 	})
