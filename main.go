@@ -7,6 +7,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"github.com/mbaklor/fyne-catppuccin"
+	"github.com/pwh-pwh/AccessSui/mytheme"
 	"github.com/pwh-pwh/AccessSui/ui" // 导入 ui 包
 )
 
@@ -15,7 +16,7 @@ func main() {
 	ctp := catppuccin.New()
 	ctp.SetFlavor(catppuccin.Frappe)
 
-	a.Settings().SetTheme(MyTheme{ctp})
+	a.Settings().SetTheme(mytheme.MyTheme{ctp})
 	w := a.NewWindow("去中心化知识加密分享平台")
 	w.Resize(fyne.NewSize(800, 600))
 
