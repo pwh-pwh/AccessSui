@@ -6,32 +6,20 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/mbaklor/fyne-catppuccin"
 	"github.com/pwh-pwh/AccessSui/ui" // 导入 ui 包
 )
 
-// package id:0xbda58f110ce755a63c007d68cc53f7ac68c780dc8fb1fb16ad52d797143b4799
-//tx: 6S5b62crgfbikAEZKLwphkQqtf5wuJwQqkkRW4ywnxug
-//obj:0x7dc80959fdd7b4c68ba0caa2f0f1182fb297817742caf170dc1f787d58317f3d
-
-const (
-	PackageId  = "0xbda58f110ce755a63c007d68cc53f7ac68c780dc8fb1fb16ad52d797143b4799"
-	CountObjId = "0x7dc80959fdd7b4c68ba0caa2f0f1182fb297817742caf170dc1f787d58317f3d"
-)
-
-/*func init() {
-	err := godotenv.Load(".env") // 默认读取 .env 文件
-	if err != nil {
-		log.Fatal("Error loading .env file")
-	}
-}*/
-
 func main() {
 	a := app.New()
+	ctp := catppuccin.New()
+	ctp.SetFlavor(catppuccin.Frappe)
+	a.Settings().SetTheme(ctp)
 	w := a.NewWindow("去中心化知识加密分享平台")
 	w.Resize(fyne.NewSize(800, 600))
 
 	// 创建一个可切换内容的容器
-	contentContainer := container.NewMax()
+	contentContainer := container.NewStack()
 
 	// 侧边导航栏
 	marketBtn := widget.NewButton("内容市场", func() {
