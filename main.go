@@ -14,7 +14,8 @@ func main() {
 	a := app.New()
 	ctp := catppuccin.New()
 	ctp.SetFlavor(catppuccin.Frappe)
-	a.Settings().SetTheme(ctp)
+
+	a.Settings().SetTheme(MyTheme{ctp})
 	w := a.NewWindow("去中心化知识加密分享平台")
 	w.Resize(fyne.NewSize(800, 600))
 
