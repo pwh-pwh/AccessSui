@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	walrus "github.com/namihq/walrus-go"
+	"github.com/namihq/walrus-go/encryption"
 )
 
 const (
@@ -33,7 +34,38 @@ func StoreData(data []byte) (blodId string, err error) {
 	return
 }
 
+func StoreDataWithKey(data []byte, key []byte) (blodId string, err error) {
+	resp, err := WALRUS_CLIENT.Store(data, &walrus.StoreOptions{Epochs: 1,
+		Encryption: &walrus.EncryptionOptions{
+			Key:   key,
+			Suite: encryption.AES256GCM,
+		}})
+	if err != nil {
+		return
+	}
+	if resp.NewlyCreated != nil {
+		blobID := resp.NewlyCreated.BlobObject.BlobID
+		fmt.Printf("Stored new blob ID: %s with cost: %d\n",
+			blobID, resp.NewlyCreated.Cost)
+	} else if resp.AlreadyCertified != nil {
+		blobID := resp.AlreadyCertified.BlobID
+		fmt.Printf("Blob already exists with ID: %s, end epoch: %d\n",
+			blobID, resp.AlreadyCertified.EndEpoch)
+	}
+	return
+}
+
 func RecData(blodId string) (data []byte, err error) {
 	data, err = WALRUS_CLIENT.Read(blodId, nil)
+	return
+}
+
+func RecDataWithKey(blodId string, key []byte) (data []byte, err error) {
+	data, err = WALRUS_CLIENT.Read(blodId, &walrus.ReadOptions{
+		Encryption: &walrus.EncryptionOptions{
+			Key:   key,
+			Suite: encryption.AES256GCM,
+		},
+	})
 	return
 }
