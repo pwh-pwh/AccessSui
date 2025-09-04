@@ -14,6 +14,8 @@ module access_sui::content {
         creator: address,
         /// 内容的URI（统一资源标识符）。
         uri: vector<u8>,
+        /// 内容标题
+        content_title: vector<u8>,
         /// 加密后内容的SHA256哈希值。
         content_hash: vector<u8>,
         /// 内容价格，以基础单位计算（例如，SUI的MIST）。
@@ -26,6 +28,7 @@ module access_sui::content {
     public entry fun publish_content(
         creator: address,
         _uri: vector<u8>,
+        content_title: vector<u8>,
         content_hash: vector<u8>,
         price: u64,
         ctx: &mut TxContext
@@ -35,6 +38,7 @@ module access_sui::content {
             id: object::new(ctx),
             creator: creator,
             uri: _uri,
+            content_title: content_title,
             content_hash: content_hash,
             price: price,
             access_levels: table::new(ctx),

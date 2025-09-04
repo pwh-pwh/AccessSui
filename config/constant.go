@@ -1,0 +1,5 @@
+package config
+
+const (
+	PACKAGE_ID = "0x43572497e021468b14d91d4d17e86d960d3f30441efb60290b1dda50868be0a8"
+)
