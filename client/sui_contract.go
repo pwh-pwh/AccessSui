@@ -20,7 +20,7 @@ type SuiContractClient struct {
 }
 
 func NewSuiContractClient(mnemonic string) (*SuiContractClient, error) {
-	cli := sui.NewSuiClient(constant.BvTestnetEndpoint)
+	cli := sui.NewSuiClient(constant.SuiTestnetEndpoint)
 	signerAccount, err := signer.NewSignertWithMnemonic(mnemonic)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create signer account: %w", err)
@@ -61,7 +61,7 @@ func (s *SuiContractClient) PublishContent(
 		Function:        "publish_content",
 		TypeArguments:   []interface{}{},
 		Arguments:       arguments,
-		Gas:             &gasObjectId,
+		Gas:             nil,
 		GasBudget:       gasBudget,
 	})
 	if err != nil {

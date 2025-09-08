@@ -11,9 +11,9 @@ import (
 // In a real scenario, you would manage mnemonics securely.
 // For testing purposes, we use a placeholder.
 // DO NOT use this mnemonic in production.
-const TEST_MNEMONIC = "YOUR_TEST_MNEMONIC_HERE"          // Replace with a test mnemonic from Sui Wallet
-const TEST_GAS_OBJECT_ID = "YOUR_GAS_OBJECT_ID_HERE"     // Replace with a gas object ID from your test account
-const TEST_CREATOR_ADDRESS = "YOUR_CREATOR_ADDRESS_HERE" // Replace with the address derived from your mnemonic
+const TEST_MNEMONIC = ""                                                                        // Replace with a test mnemonic from Sui Wallet
+const TEST_GAS_OBJECT_ID = "0xeeda0d5fd6410dc7a00271fae57f0c673fd05387791cc650917dbb3ddf7773d4" // Replace with a gas object ID from your test account
+const TEST_CREATOR_ADDRESS = "YOUR_CREATOR_ADDRESS_HERE"                                        // Replace with the address derived from your mnemonic
 const TEST_PACKAGE_ID = "0x43572497e021468b14d91d4d17e86d960d3f30441efb60290b1dda50868be0a8"
 
 func TestNewSuiContractClient(t *testing.T) {
@@ -49,8 +49,8 @@ func TestPublishContent(t *testing.T) {
 	contentHash := "testcontenthash12345"
 	price := "1000" // 1000 MIST
 
-	fmt.Printf("Publishing content from creator: %s\n", TEST_CREATOR_ADDRESS)
-	resp, err := client.PublishContent(ctx, TEST_CREATOR_ADDRESS, uri, contentTitle, contentHash, price, TEST_GAS_OBJECT_ID, "100000000")
+	fmt.Printf("Publishing content from creator: %s\n", client.signerAccount.Address)
+	resp, err := client.PublishContent(ctx, client.signerAccount.Address, uri, contentTitle, contentHash, price, TEST_GAS_OBJECT_ID, "100000000")
 	if err != nil {
 		t.Fatalf("PublishContent failed: %v", err)
 	}
@@ -64,20 +64,8 @@ func TestPublishContent(t *testing.T) {
 }
 
 func TestBuyAccessToken(t *testing.T) {
-	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("Skipping integration test TestBuyAccessToken. Set RUN_INTEGRATION_TESTS=true to enable.")
-	}
-	if TEST_MNEMONIC == "YOUR_TEST_MNEMONIC_HERE" || TEST_GAS_OBJECT_ID == "YOUR_GAS_OBJECT_ID_HERE" || TEST_CREATOR_ADDRESS == "YOUR_CREATOR_ADDRESS_HERE" {
-		t.Skip("Skipping TestBuyAccessToken: Please replace placeholder constants in sui_contract_test.go")
-	}
 
 	// This test requires an existing Content object and a coin object to pay with.
-	const CONTENT_OBJECT_ID_FOR_TOKEN = "YOUR_CONTENT_OBJECT_ID_FOR_TOKEN_HERE" // Replace with an actual Content object ID
-	const PAYMENT_COIN_OBJECT_ID = "YOUR_PAYMENT_COIN_OBJECT_ID_HERE"           // Replace with an actual coin object ID
-
-	if CONTENT_OBJECT_ID_FOR_TOKEN == "YOUR_CONTENT_OBJECT_ID_FOR_TOKEN_HERE" || PAYMENT_COIN_OBJECT_ID == "YOUR_PAYMENT_COIN_OBJECT_ID_HERE" {
-		t.Skip("Skipping TestBuyAccessToken: Please provide CONTENT_OBJECT_ID_FOR_TOKEN and PAYMENT_COIN_OBJECT_ID in sui_contract_test.go")
-	}
 
 	client, err := NewSuiContractClient(TEST_MNEMONIC)
 	if err != nil {
@@ -89,8 +77,8 @@ func TestBuyAccessToken(t *testing.T) {
 
 	duration := "3600" // 1 hour
 
-	fmt.Printf("Buying access token for content %s with payment coin %s\n", CONTENT_OBJECT_ID_FOR_TOKEN, PAYMENT_COIN_OBJECT_ID)
-	resp, err := client.BuyAccessToken(ctx, CONTENT_OBJECT_ID_FOR_TOKEN, PAYMENT_COIN_OBJECT_ID, duration, TEST_GAS_OBJECT_ID, "100000000")
+	resp, err := client.BuyAccessToken(ctx, "0x896f8a1a8de8627327c48759522b6ad9ca2b9b55b784caf634bebd418d6fc3ba",
+		"0xcad68e42fb55c2c4d066ca787c635b7a50ad6431193c7c4962cd1c34e3693f59", duration, TEST_GAS_OBJECT_ID, "100000000")
 	if err != nil {
 		t.Fatalf("BuyAccessToken failed: %v", err)
 	}
