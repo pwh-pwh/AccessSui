@@ -7,7 +7,7 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/theme" // 导入 theme 包以使用内置图标
 	"fyne.io/fyne/v2/widget"
-	"github.com/mbaklor/fyne-catppuccin"
+	catppuccin "github.com/mbaklor/fyne-catppuccin"
 	"github.com/pwh-pwh/AccessSui/mytheme"
 	"github.com/pwh-pwh/AccessSui/ui" // 导入 ui 包
 )
@@ -42,7 +42,7 @@ func main() {
 		contentContainer.Refresh()
 	})
 	settingsBtn := widget.NewButtonWithIcon("设置", theme.SettingsIcon(), func() {
-		contentContainer.Objects = []fyne.CanvasObject{ui.SettingsContent()}
+		contentContainer.Objects = []fyne.CanvasObject{ui.SettingsContent(w)}
 		contentContainer.Refresh()
 	})
 
