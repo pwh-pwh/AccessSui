@@ -2,7 +2,9 @@ package AccessSui
 
 import (
 	"context"
+	"crypto/ed25519"
 	"fmt"
+
 	"github.com/block-vision/sui-go-sdk/constant"
 	"github.com/block-vision/sui-go-sdk/models"
 	"github.com/block-vision/sui-go-sdk/signer"
@@ -12,23 +14,22 @@ import (
 )
 
 type SuiContractClient struct {
-	cli *sui.SuiClient
-	signerAccount *signer.SuiSigner
-	privateKey string
+	cli           sui.ISuiAPI
+	signerAccount *signer.Signer
+	privateKey    ed25519.PrivateKey
 }
 
 func NewSuiContractClient(mnemonic string) (*SuiContractClient, error) {
 	cli := sui.NewSuiClient(constant.BvTestnetEndpoint)
-
 	signerAccount, err := signer.NewSignertWithMnemonic(mnemonic)
 	if err != nil {
 		return nil, fmt.Errorf("failed to create signer account: %w", err)
 	}
-	
+
 	return &SuiContractClient{
-		cli: cli,
+		cli:           cli,
 		signerAccount: signerAccount,
-		privateKey: signerAccount.PriKey,
+		privateKey:    signerAccount.PriKey,
 	}, nil
 }
 
@@ -43,7 +44,7 @@ func (s *SuiContractClient) PublishContent(
 	gasObjectId string,
 	gasBudget string,
 ) (*models.SuiTransactionBlockResponse, error) {
-	
+
 	// Arguments for the Move function
 	arguments := []interface{}{
 		creator,
@@ -85,7 +86,7 @@ func (s *SuiContractClient) PublishContent(
 	}
 
 	utils.PrettyPrint(rsp2) // For debugging
-	return rsp2, nil
+	return &rsp2, nil
 }
 
 // AddAccessLevel calls the 'add_access_level' Move function.
@@ -137,7 +138,7 @@ func (s *SuiContractClient) AddAccessLevel(
 	}
 
 	utils.PrettyPrint(rsp2) // For debugging
-	return rsp2, nil
+	return &rsp2, nil
 }
 
 // BuyAccessToken calls the 'buy_access_token' Move function.
@@ -190,7 +191,7 @@ func (s *SuiContractClient) BuyAccessToken(
 	}
 
 	utils.PrettyPrint(rsp2) // For debugging
-	return rsp2, nil
+	return &rsp2, nil
 }
 
 // TransferAccessToken calls the 'transfer_access_token' Move function.
@@ -244,7 +245,7 @@ func (s *SuiContractClient) TransferAccessToken(
 	}
 
 	utils.PrettyPrint(rsp2) // For debugging
-	return rsp2, nil
+	return &rsp2, nil
 }
 
 // RevokeAccessToken calls the 'revoke_access_token' Move function.
@@ -294,11 +295,11 @@ func (s *SuiContractClient) RevokeAccessToken(
 	}
 
 	utils.PrettyPrint(rsp2) // For debugging
-	return rsp2, nil
+	return &rsp2, nil
 }
 
 // GetAccessTokenObject fetches the AccessToken object details.
-func (s *SuiContractClient) GetAccessTokenObject(ctx context.Context, objectId string) (*models.SuiGetObjectResponse, error) {
+func (s *SuiContractClient) GetAccessTokenObject(ctx context.Context, objectId string) (*models.SuiObjectResponse, error) {
 	rsp, err := s.cli.SuiGetObject(ctx, models.SuiGetObjectRequest{
 		ObjectId: objectId,
 		Options: models.SuiObjectDataOptions{
@@ -314,16 +315,16 @@ func (s *SuiContractClient) GetAccessTokenObject(ctx context.Context, objectId s
 	if err != nil {
 		return nil, fmt.Errorf("failed to get access token object: %w", err)
 	}
-	return rsp, nil
+	return &rsp, nil
 }
 
 // QueryEvents queries Sui events based on a filter.
 func (s *SuiContractClient) QueryEvents(
 	ctx context.Context,
 	queryFilter models.SuiEventFilter,
-	limit uint,
+	limit uint64,
 	descendingOrder bool,
-) (*models.SuiXQueryEventsResponse, error) {
+) (*models.PaginatedEventsResponse, error) {
 	rsp, err := s.cli.SuiXQueryEvents(ctx, models.SuiXQueryEventsRequest{
 		SuiEventFilter:  queryFilter,
 		Limit:           limit,
@@ -332,7 +333,7 @@ func (s *SuiContractClient) QueryEvents(
 	if err != nil {
 		return nil, fmt.Errorf("failed to query events: %w", err)
 	}
-	return rsp, nil
+	return &rsp, nil
 }
 
 // SubscribeEvents subscribes to a stream of Sui events via WebSocket.
