@@ -136,6 +136,147 @@ func TestAddAccessLevel(t *testing.T) {
 	if err != nil {
 		t.Fatalf("AddAccessLevel failed: %v", err)
 	}
+	
+	func TestBuyAccessToken(t *testing.T) {
+		if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
+			t.Skip("Skipping integration test TestBuyAccessToken. Set RUN_INTEGRATION_TESTS=true to enable.")
+		}
+		if TEST_MNEMONIC == "YOUR_TEST_MNEMONIC_HERE" || TEST_GAS_OBJECT_ID == "YOUR_GAS_OBJECT_ID_HERE" || TEST_CREATOR_ADDRESS == "YOUR_CREATOR_ADDRESS_HERE" {
+			t.Skip("Skipping TestBuyAccessToken: Please replace placeholder constants in sui_contract_test.go")
+		}
+	
+		// This test requires an existing Content object and a coin object to pay with.
+		const CONTENT_OBJECT_ID_FOR_TOKEN = "YOUR_CONTENT_OBJECT_ID_FOR_TOKEN_HERE" // Replace with an actual Content object ID
+		const PAYMENT_COIN_OBJECT_ID = "YOUR_PAYMENT_COIN_OBJECT_ID_HERE"           // Replace with an actual coin object ID
+	
+		if CONTENT_OBJECT_ID_FOR_TOKEN == "YOUR_CONTENT_OBJECT_ID_FOR_TOKEN_HERE" || PAYMENT_COIN_OBJECT_ID == "YOUR_PAYMENT_COIN_OBJECT_ID_HERE" {
+			t.Skip("Skipping TestBuyAccessToken: Please provide CONTENT_OBJECT_ID_FOR_TOKEN and PAYMENT_COIN_OBJECT_ID in sui_contract_test.go")
+		}
+	
+		client, err := NewSuiContractClient(TEST_MNEMONIC)
+		if err != nil {
+			t.Fatalf("NewSuiContractClient failed: %v", err)
+		}
+	
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+	
+		duration := "3600" // 1 hour
+	
+		fmt.Printf("Buying access token for content %s with payment coin %s\n", CONTENT_OBJECT_ID_FOR_TOKEN, PAYMENT_COIN_OBJECT_ID)
+		resp, err := client.BuyAccessToken(ctx, CONTENT_OBJECT_ID_FOR_TOKEN, PAYMENT_COIN_OBJECT_ID, duration, TEST_GAS_OBJECT_ID, "100000000")
+		if err != nil {
+			t.Fatalf("BuyAccessToken failed: %v", err)
+		}
+	
+		if resp.Error != nil {
+			t.Fatalf("BuyAccessToken transaction failed with error: %s", resp.Error.Message)
+		}
+		if resp.Digest == "" {
+			t.Fatal("BuyAccessToken did not return a transaction digest")
+		}
+	
+		fmt.Printf("Buy Access Token Transaction Digest: %s\n", resp.Digest)
+	
+		time.Sleep(5 * time.Second) // Give some time for the transaction to be processed
+	
+		var newAccessTokenObjectId string
+		if resp.ObjectChanges != nil {
+			for _, change := range *resp.ObjectChanges {
+				if change.Type == "created" && change.ObjectType == "0x" + TEST_PACKAGE_ID[2:] + "::token::AccessToken" {
+					newAccessTokenObjectId = change.ObjectId
+					break
+				}
+			}
+		}
+	
+		if newAccessTokenObjectId == "" {
+			t.Fatal("Failed to find new AccessToken object ID in transaction response")
+		}
+	
+		fmt.Printf("New AccessToken Object ID: %s\n", newAccessTokenObjectId)
+	
+		accessTokenObj, err := client.GetAccessTokenObject(ctx, newAccessTokenObjectId)
+		if err != nil {
+			t.Fatalf("GetAccessTokenObject failed: %v", err)
+		}
+	
+		if accessTokenObj.Data == nil {
+			t.Fatalf("AccessToken object data is nil for ID: %s", newAccessTokenObjectId)
+		}
+	
+		fmt.Printf("Verified AccessToken Object: %+v\n", accessTokenObj.Data)
+	}
+	
+	func TestQueryEvents(t *testing.T) {
+		if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
+			t.Skip("Skipping integration test TestQueryEvents. Set RUN_INTEGRATION_TESTS=true to enable.")
+		}
+	
+		client, err := NewSuiContractClient(TEST_MNEMONIC)
+		if err != nil {
+			t.Fatalf("NewSuiContractClient failed: %v", err)
+		}
+	
+		ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+		defer cancel()
+	
+		// Example: Query ContentPublished events
+		filter := models.EventFilterByMoveEventType{
+			MoveEventType: "0x" + TEST_PACKAGE_ID[2:] + "::events::ContentPublished",
+		}
+	
+		fmt.Printf("Querying for events with filter: %+v\n", filter)
+		events, err := client.QueryEvents(ctx, filter, 10, true) // Limit 10, descending
+		if err != nil {
+			t.Fatalf("QueryEvents failed: %v", err)
+		}
+	
+		fmt.Printf("Found %d events.\n", len(events.Data))
+		for _, event := range events.Data {
+			fmt.Printf("Event: %+v\n", event)
+		}
+		if len(events.Data) == 0 {
+			t.Log("No ContentPublished events found. This might be normal if no content has been published on the testnet recently.")
+		}
+	}
+	
+	func TestSubscribeEvents(t *testing.T) {
+		if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
+			t.Skip("Skipping integration test TestSubscribeEvents. Set RUN_INTEGRATION_TESTS=true to enable.")
+		}
+	
+		client, err := NewSuiContractClient(TEST_MNEMONIC) // Mnemonic is not directly used for subscription but for client creation
+		if err != nil {
+			t.Fatalf("NewSuiContractClient failed: %v", err)
+		}
+	
+		ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second) // Long timeout for subscription
+		defer cancel()
+	
+		receiveMsgCh := make(chan models.SuiEventResponse, 10)
+	
+		// Subscribe to all events for simplicity, or specify a more granular filter
+		filter := models.EventFilterByAll{
+			All: []string{},
+		}
+	
+		fmt.Printf("Subscribing to all events...\n")
+		err = client.SubscribeEvents(ctx, filter, receiveMsgCh)
+		if err != nil {
+			t.Fatalf("SubscribeEvents failed: %v", err)
+		}
+	
+		fmt.Println("Waiting for 10 seconds to receive events. Please interact with the Sui network if no events are appearing.")
+		select {
+		case event := <-receiveMsgCh:
+			fmt.Printf("Received event: %+v\n", event)
+		case <-time.After(10 * time.Second):
+			fmt.Println("No events received within 10 seconds. You might need to trigger some transactions on the testnet.")
+		case <-ctx.Done():
+			fmt.Println("Subscription context cancelled.")
+		}
+	}
 
 	if resp.Error != nil {
 		t.Fatalf("AddAccessLevel transaction failed with error: %s", resp.Error.Message)

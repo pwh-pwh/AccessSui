@@ -140,8 +140,165 @@ func (s *SuiContractClient) AddAccessLevel(
 	return rsp2, nil
 }
 
-// GetContentObject fetches the Content object details.
-func (s *SuiContractClient) GetContentObject(ctx context.Context, objectId string) (*models.SuiGetObjectResponse, error) {
+// BuyAccessToken calls the 'buy_access_token' Move function.
+func (s *SuiContractClient) BuyAccessToken(
+	ctx context.Context,
+	contentObjectId string,
+	paymentCoinId string,
+	durationSeconds string, // u64
+	gasObjectId string,
+	gasBudget string,
+) (*models.SuiTransactionBlockResponse, error) {
+
+	// Arguments for the Move function
+	arguments := []interface{}{
+		contentObjectId,
+		paymentCoinId,
+		durationSeconds,
+		"0x6", // Clock object shared ID
+	}
+
+	rsp, err := s.cli.MoveCall(ctx, models.MoveCallRequest{
+		Signer:          s.signerAccount.Address,
+		PackageObjectId: config.PACKAGE_ID,
+		Module:          "token",
+		Function:        "buy_access_token",
+		TypeArguments:   []interface{}{},
+		Arguments:       arguments,
+		Gas:             &gasObjectId,
+		GasBudget:       gasBudget,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare MoveCall for BuyAccessToken: %w", err)
+	}
+
+	rsp2, err := s.cli.SignAndExecuteTransactionBlock(ctx, models.SignAndExecuteTransactionBlockRequest{
+		TxnMetaData: rsp,
+		PriKey:      s.privateKey,
+		Options: models.SuiTransactionBlockOptions{
+			ShowInput:          true,
+			ShowRawInput:       true,
+			ShowEffects:        true,
+			ShowEvents:         true,
+			ShowObjectChanges:  true,
+			ShowBalanceChanges: true,
+		},
+		RequestType: "WaitForLocalExecution",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign and execute transaction for BuyAccessToken: %w", err)
+	}
+
+	utils.PrettyPrint(rsp2) // For debugging
+	return rsp2, nil
+}
+
+// TransferAccessToken calls the 'transfer_access_token' Move function.
+func (s *SuiContractClient) TransferAccessToken(
+	ctx context.Context,
+	accessTokenId string,
+	recipient string,
+	paymentCoinId string,
+	contentObjectId string,
+	gasObjectId string,
+	gasBudget string,
+) (*models.SuiTransactionBlockResponse, error) {
+
+	// Arguments for the Move function
+	arguments := []interface{}{
+		accessTokenId,
+		recipient,
+		paymentCoinId,
+		contentObjectId,
+	}
+
+	rsp, err := s.cli.MoveCall(ctx, models.MoveCallRequest{
+		Signer:          s.signerAccount.Address,
+		PackageObjectId: config.PACKAGE_ID,
+		Module:          "token",
+		Function:        "transfer_access_token",
+		TypeArguments:   []interface{}{},
+		Arguments:       arguments,
+		Gas:             &gasObjectId,
+		GasBudget:       gasBudget,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare MoveCall for TransferAccessToken: %w", err)
+	}
+
+	rsp2, err := s.cli.SignAndExecuteTransactionBlock(ctx, models.SignAndExecuteTransactionBlockRequest{
+		TxnMetaData: rsp,
+		PriKey:      s.privateKey,
+		Options: models.SuiTransactionBlockOptions{
+			ShowInput:          true,
+			ShowRawInput:       true,
+			ShowEffects:        true,
+			ShowEvents:         true,
+			ShowObjectChanges:  true,
+			ShowBalanceChanges: true,
+		},
+		RequestType: "WaitForLocalExecution",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign and execute transaction for TransferAccessToken: %w", err)
+	}
+
+	utils.PrettyPrint(rsp2) // For debugging
+	return rsp2, nil
+}
+
+// RevokeAccessToken calls the 'revoke_access_token' Move function.
+func (s *SuiContractClient) RevokeAccessToken(
+	ctx context.Context,
+	accessTokenId string,
+	contentObjectId string,
+	gasObjectId string,
+	gasBudget string,
+) (*models.SuiTransactionBlockResponse, error) {
+
+	// Arguments for the Move function
+	arguments := []interface{}{
+		accessTokenId,
+		contentObjectId,
+	}
+
+	rsp, err := s.cli.MoveCall(ctx, models.MoveCallRequest{
+		Signer:          s.signerAccount.Address,
+		PackageObjectId: config.PACKAGE_ID,
+		Module:          "token",
+		Function:        "revoke_access_token",
+		TypeArguments:   []interface{}{},
+		Arguments:       arguments,
+		Gas:             &gasObjectId,
+		GasBudget:       gasBudget,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to prepare MoveCall for RevokeAccessToken: %w", err)
+	}
+
+	rsp2, err := s.cli.SignAndExecuteTransactionBlock(ctx, models.SignAndExecuteTransactionBlockRequest{
+		TxnMetaData: rsp,
+		PriKey:      s.privateKey,
+		Options: models.SuiTransactionBlockOptions{
+			ShowInput:          true,
+			ShowRawInput:       true,
+			ShowEffects:        true,
+			ShowEvents:         true,
+			ShowObjectChanges:  true,
+			ShowBalanceChanges: true,
+		},
+		RequestType: "WaitForLocalExecution",
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to sign and execute transaction for RevokeAccessToken: %w", err)
+	}
+
+	utils.PrettyPrint(rsp2) // For debugging
+	return rsp2, nil
+}
+
+// GetAccessTokenObject fetches the AccessToken object details.
+func (s *SuiContractClient) GetAccessTokenObject(ctx context.Context, objectId string) (*models.SuiGetObjectResponse, error) {
 	rsp, err := s.cli.SuiGetObject(ctx, models.SuiGetObjectRequest{
 		ObjectId: objectId,
 		Options: models.SuiObjectDataOptions{
@@ -155,7 +312,42 @@ func (s *SuiContractClient) GetContentObject(ctx context.Context, objectId strin
 		},
 	})
 	if err != nil {
-		return nil, fmt.Errorf("failed to get content object: %w", err)
+		return nil, fmt.Errorf("failed to get access token object: %w", err)
 	}
 	return rsp, nil
+}
+
+// QueryEvents queries Sui events based on a filter.
+func (s *SuiContractClient) QueryEvents(
+	ctx context.Context,
+	queryFilter models.SuiEventFilter,
+	limit uint,
+	descendingOrder bool,
+) (*models.SuiXQueryEventsResponse, error) {
+	rsp, err := s.cli.SuiXQueryEvents(ctx, models.SuiXQueryEventsRequest{
+		SuiEventFilter:  queryFilter,
+		Limit:           limit,
+		DescendingOrder: descendingOrder,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("failed to query events: %w", err)
+	}
+	return rsp, nil
+}
+
+// SubscribeEvents subscribes to a stream of Sui events via WebSocket.
+// The received events will be sent to the provided receiveMsgCh.
+func (s *SuiContractClient) SubscribeEvents(
+	ctx context.Context,
+	queryFilter models.SuiEventFilter,
+	receiveMsgCh chan models.SuiEventResponse,
+) error {
+	wsCli := sui.NewSuiWebsocketClient(constant.WssBvTestnetEndpoint) // Using testnet websocket endpoint
+	err := wsCli.SubscribeEvent(ctx, models.SuiXSubscribeEventsRequest{
+		SuiEventFilter: queryFilter,
+	}, receiveMsgCh)
+	if err != nil {
+		return fmt.Errorf("failed to subscribe to events: %w", err)
+	}
+	return nil
 }
