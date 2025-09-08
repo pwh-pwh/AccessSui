@@ -35,12 +35,6 @@ func TestNewSuiContractClient(t *testing.T) {
 }
 
 func TestPublishContent(t *testing.T) {
-	if os.Getenv("RUN_INTEGRATION_TESTS") != "true" {
-		t.Skip("Skipping integration test TestPublishContent. Set RUN_INTEGRATION_TESTS=true to enable.")
-	}
-	if TEST_MNEMONIC == "YOUR_TEST_MNEMONIC_HERE" || TEST_GAS_OBJECT_ID == "YOUR_GAS_OBJECT_ID_HERE" || TEST_CREATOR_ADDRESS == "YOUR_CREATOR_ADDRESS_HERE" {
-		t.Skip("Skipping TestPublishContent: Please replace placeholder constants in sui_contract_test.go")
-	}
 
 	client, err := NewSuiContractClient(TEST_MNEMONIC)
 	if err != nil {
