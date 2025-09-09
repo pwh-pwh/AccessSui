@@ -1,4 +1,4 @@
-package AccessSui
+package client
 
 import (
 	"context"

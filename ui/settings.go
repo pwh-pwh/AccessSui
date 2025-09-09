@@ -10,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"github.com/pwh-pwh/AccessSui/client"
 
 	myconfig "github.com/pwh-pwh/AccessSui/config" // Corrected full import path
 )
@@ -55,7 +56,12 @@ func SettingsContent(w fyne.Window) *fyne.Container {
 					dialog.ShowError(fmt.Errorf("助记词不能为空，请输入助记词"), w) // Use fmt.Errorf
 					return
 				}
-				err := myconfig.SaveMnemonic(mnemonic)
+				_, err := client.NewSuiContractClient(mnemonic)
+				if err != nil {
+					dialog.ShowError(err, w)
+					return
+				}
+				err = myconfig.SaveMnemonic(mnemonic)
 				if err != nil {
 					dialog.ShowError(err, w)
 					return
