@@ -2,11 +2,14 @@ package ui
 
 import (
 	"errors" // 导入 errors 包
+	"fmt"
 	"strconv" // 导入 strconv 包
+
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout" // 导入 layout 包
 	"fyne.io/fyne/v2/widget"
+	"github.com/pwh-pwh/AccessSui/store"
 )
 
 // UploadContent creates the UI for content uploading by creators.
@@ -30,20 +33,29 @@ func UploadContent(contentContainer *fyne.Container) *fyne.Container {
 			priceEntry.SetValidationError(nil)
 		}
 	}
-
+	descEntry := widget.NewMultiLineEntry()
 	form := container.New(layout.NewFormLayout(),
 		widget.NewLabel("内容标题"), titleEntry,
-		widget.NewLabel("内容描述"), widget.NewMultiLineEntry(),
+		widget.NewLabel("内容描述"), descEntry,
 		widget.NewLabel("内容文件"), widget.NewButton("选择内容文件", func() { /* 文件选择逻辑 */ }),
 		widget.NewLabel("封面图"), widget.NewButton("上传封面图/缩略图", func() { /* 封面图上传逻辑 */ }),
 		widget.NewLabel("价格"), priceEntry,
 		widget.NewLabel("订阅制"), widget.NewCheck("", func(b bool) { /* 订阅制选项 */ }),
 		widget.NewLabel("版税比例"), widget.NewEntry(),
 	)
-
+	msgLabel := widget.NewLabel("上传进度: 0%")
+	msgLabel.Selectable = true
 	bottomContent := container.NewVBox(
-		widget.NewButton("上传并铸造", func() { /* 上传并铸造逻辑 */ }),
-		widget.NewLabel("上传进度: 0%"),
+		widget.NewButton("上传并铸造", func() {
+			/* 上传并铸造逻辑 */
+			blodId, err := store.StoreData([]byte(descEntry.Text))
+			if err != nil {
+				msgLabel.SetText(err.Error())
+				return
+			}
+			msgLabel.SetText(fmt.Sprintf("上传blodId: %s", blodId))
+		}),
+		msgLabel,
 	)
 
 	return container.NewVBox(form, bottomContent)

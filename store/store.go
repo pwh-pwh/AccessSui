@@ -23,13 +23,13 @@ func StoreData(data []byte) (blodId string, err error) {
 		return
 	}
 	if resp.NewlyCreated != nil {
-		blobID := resp.NewlyCreated.BlobObject.BlobID
+		blodId = resp.NewlyCreated.BlobObject.BlobID
 		fmt.Printf("Stored new blob ID: %s with cost: %d\n",
-			blobID, resp.NewlyCreated.Cost)
+			blodId, resp.NewlyCreated.Cost)
 	} else if resp.AlreadyCertified != nil {
-		blobID := resp.AlreadyCertified.BlobID
+		blodId = resp.AlreadyCertified.BlobID
 		fmt.Printf("Blob already exists with ID: %s, end epoch: %d\n",
-			blobID, resp.AlreadyCertified.EndEpoch)
+			blodId, resp.AlreadyCertified.EndEpoch)
 	}
 	return
 }
@@ -44,13 +44,13 @@ func StoreDataWithKey(data []byte, key []byte) (blodId string, err error) {
 		return
 	}
 	if resp.NewlyCreated != nil {
-		blobID := resp.NewlyCreated.BlobObject.BlobID
+		blodId := resp.NewlyCreated.BlobObject.BlobID
 		fmt.Printf("Stored new blob ID: %s with cost: %d\n",
-			blobID, resp.NewlyCreated.Cost)
+			blodId, resp.NewlyCreated.Cost)
 	} else if resp.AlreadyCertified != nil {
-		blobID := resp.AlreadyCertified.BlobID
+		blodId := resp.AlreadyCertified.BlobID
 		fmt.Printf("Blob already exists with ID: %s, end epoch: %d\n",
-			blobID, resp.AlreadyCertified.EndEpoch)
+			blodId, resp.AlreadyCertified.EndEpoch)
 	}
 	return
 }
