@@ -1,6 +1,7 @@
 package ui
 
 import (
+	"context"
 	"errors" // 导入 errors 包
 	"fmt"
 	"strconv" // 导入 strconv 包
@@ -9,6 +10,7 @@ import (
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout" // 导入 layout 包
 	"fyne.io/fyne/v2/widget"
+	"github.com/pwh-pwh/AccessSui/client"
 	"github.com/pwh-pwh/AccessSui/store"
 )
 
@@ -53,7 +55,19 @@ func UploadContent(contentContainer *fyne.Container) *fyne.Container {
 				msgLabel.SetText(err.Error())
 				return
 			}
-			msgLabel.SetText(fmt.Sprintf("上传blodId: %s", blodId))
+
+			suiClient, err := client.GetSuiClient()
+			if err != nil {
+				msgLabel.SetText(err.Error())
+				return
+			}
+			resp, err := suiClient.PublishContent(context.Background(),
+				suiClient.GetAddress(), blodId, titleEntry.Text, blodId, priceEntry.Text, "", "100000000")
+			if err != nil {
+				msgLabel.SetText(err.Error())
+				return
+			}
+			msgLabel.SetText(fmt.Sprintf("交易tx: %s\nblodId: %s", resp.Digest, blodId))
 		}),
 		msgLabel,
 	)

@@ -19,6 +19,10 @@ type SuiContractClient struct {
 	privateKey    ed25519.PrivateKey
 }
 
+func (s *SuiContractClient) GetAddress() string {
+	return s.signerAccount.Address
+}
+
 func NewSuiContractClient(mnemonic string) (*SuiContractClient, error) {
 	cli := sui.NewSuiClient(constant.SuiTestnetEndpoint)
 	signerAccount, err := signer.NewSignertWithMnemonic(mnemonic)
