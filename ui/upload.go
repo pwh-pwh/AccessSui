@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors" // 导入 errors 包
 	"fmt"
+	"io"
 	"strconv" // 导入 strconv 包
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
+	"fyne.io/fyne/v2/dialog"
 	"fyne.io/fyne/v2/layout" // 导入 layout 包
 	"fyne.io/fyne/v2/widget"
 	"github.com/pwh-pwh/AccessSui/client"
@@ -15,7 +17,7 @@ import (
 )
 
 // UploadContent creates the UI for content uploading by creators.
-func UploadContent(contentContainer *fyne.Container) *fyne.Container {
+func UploadContent(w fyne.Window, contentContainer *fyne.Container) *fyne.Container {
 	titleEntry := widget.NewEntry()
 	titleEntry.SetPlaceHolder("请输入内容标题")
 	titleEntry.OnChanged = func(s string) {
@@ -39,11 +41,21 @@ func UploadContent(contentContainer *fyne.Container) *fyne.Container {
 	form := container.New(layout.NewFormLayout(),
 		widget.NewLabel("内容标题"), titleEntry,
 		widget.NewLabel("内容描述"), descEntry,
-		widget.NewLabel("内容文件"), widget.NewButton("选择内容文件", func() { /* 文件选择逻辑 */ }),
-		widget.NewLabel("封面图"), widget.NewButton("上传封面图/缩略图", func() { /* 封面图上传逻辑 */ }),
+		widget.NewLabel("内容文件"), widget.NewButton("选择内容文件", func() {
+			dialog.ShowFileOpen(func(reader fyne.URIReadCloser, err error) {
+				if err != nil || reader == nil {
+					return
+				}
+				defer reader.Close()
+				data, err := io.ReadAll(reader)
+				if err != nil {
+					dialog.ShowError(err, w)
+					return
+				}
+				descEntry.SetText(string(data))
+			}, w)
+		}),
 		widget.NewLabel("价格"), priceEntry,
-		widget.NewLabel("订阅制"), widget.NewCheck("", func(b bool) { /* 订阅制选项 */ }),
-		widget.NewLabel("版税比例"), widget.NewEntry(),
 	)
 	msgLabel := widget.NewLabel("上传进度: 0%")
 	msgLabel.Selectable = true

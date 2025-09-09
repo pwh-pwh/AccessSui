@@ -34,7 +34,7 @@ func main() {
 		contentContainer.Refresh()
 	})
 	uploadBtn := widget.NewButtonWithIcon("上传内容", theme.ContentAddIcon(), func() {
-		contentContainer.Objects = []fyne.CanvasObject{ui.UploadContent(contentContainer)}
+		contentContainer.Objects = []fyne.CanvasObject{ui.UploadContent(w, contentContainer)}
 		contentContainer.Refresh()
 	})
 	historyBtn := widget.NewButtonWithIcon("历史与收藏", theme.HistoryIcon(), func() {
